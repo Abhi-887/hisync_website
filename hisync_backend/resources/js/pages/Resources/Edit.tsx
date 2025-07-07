@@ -31,7 +31,7 @@ interface Resource {
     is_featured: boolean;
     is_trending: boolean;
     featured_image?: string;
-    gallery_images: string[];
+    gallery_images?: string[];
     read_time: number;
     meta_title?: string;
     meta_description?: string;
@@ -91,10 +91,10 @@ export default function EditResource({ resource, authors, categories, popularTag
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Set the tags before submitting
         setData('tags', selectedTags);
-        
+
         put(`/resources/${resource.id}`, {
             forceFormData: true,
             onSuccess: () => {
@@ -210,7 +210,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* Basic Information */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -265,7 +265,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* Content */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Content</h2>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Content *
@@ -289,7 +289,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* SEO Settings */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -344,7 +344,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* Publish Settings */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Publish Settings</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -352,7 +352,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                                     </label>
                                     <select
                                         value={data.status}
-                                        onChange={(e) => setData('status', e.target.value)}
+                                        onChange={(e) => setData('status', e.target.value as 'draft' | 'review' | 'published' | 'archived')}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="draft">Draft</option>
@@ -453,7 +453,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* Tags */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Tags</h2>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex space-x-2">
                                     <input
@@ -510,13 +510,13 @@ export default function EditResource({ resource, authors, categories, popularTag
                         {/* Images */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Images</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Featured Image
                                     </label>
-                                    
+
                                     {/* Current Featured Image */}
                                     {resource.featured_image && !data.remove_featured_image && (
                                         <div className="mb-3">
@@ -537,7 +537,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                                             <p className="text-xs text-gray-500 mt-1">Current featured image</p>
                                         </div>
                                     )}
-                                    
+
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                                         <input
                                             type="file"
@@ -565,9 +565,9 @@ export default function EditResource({ resource, authors, categories, popularTag
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Gallery Images
                                     </label>
-                                    
+
                                     {/* Current Gallery Images */}
-                                    {resource.gallery_images.length > 0 && (
+                                    {resource.gallery_images && resource.gallery_images.length > 0 && (
                                         <div className="mb-3">
                                             <div className="grid grid-cols-3 gap-2">
                                                 {resource.gallery_images
@@ -592,7 +592,7 @@ export default function EditResource({ resource, authors, categories, popularTag
                                             <p className="text-xs text-gray-500 mt-1">Current gallery images</p>
                                         </div>
                                     )}
-                                    
+
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                                         <input
                                             type="file"

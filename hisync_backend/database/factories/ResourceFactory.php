@@ -44,7 +44,7 @@ class ResourceFactory extends Factory
 
         $content = $this->generateRichContent();
         $excerpt = $this->faker->paragraph(3);
-        
+
         return [
             'title' => $title,
             'slug' => Str::slug($title),
@@ -83,7 +83,7 @@ class ResourceFactory extends Factory
             '<h2>Introduction</h2>',
             '<p>' . $this->faker->paragraph(4) . '</p>',
             '<p>' . $this->faker->paragraph(3) . '</p>',
-            
+
             '<h2>Key Benefits</h2>',
             '<ul>',
             '<li>' . $this->faker->sentence() . '</li>',
@@ -91,13 +91,13 @@ class ResourceFactory extends Factory
             '<li>' . $this->faker->sentence() . '</li>',
             '<li>' . $this->faker->sentence() . '</li>',
             '</ul>',
-            
+
             '<h2>Implementation Guide</h2>',
             '<p>' . $this->faker->paragraph(5) . '</p>',
-            
+
             '<h3>Step 1: Planning</h3>',
             '<p>' . $this->faker->paragraph(3) . '</p>',
-            
+
             '<h3>Step 2: Configuration</h3>',
             '<p>' . $this->faker->paragraph(4) . '</p>',
             '<pre><code>// Example configuration
@@ -108,10 +108,10 @@ class ResourceFactory extends Factory
     "retry_attempts": 3
   }
 }</code></pre>',
-            
+
             '<h3>Step 3: Testing</h3>',
             '<p>' . $this->faker->paragraph(3) . '</p>',
-            
+
             '<h2>Best Practices</h2>',
             '<ol>',
             '<li><strong>Security First:</strong> ' . $this->faker->sentence() . '</li>',
@@ -119,14 +119,14 @@ class ResourceFactory extends Factory
             '<li><strong>Monitoring:</strong> ' . $this->faker->sentence() . '</li>',
             '<li><strong>Documentation:</strong> ' . $this->faker->sentence() . '</li>',
             '</ol>',
-            
+
             '<blockquote>',
             '<p>' . $this->faker->paragraph(2) . '</p>',
             '</blockquote>',
-            
+
             '<h2>Common Challenges</h2>',
             '<p>' . $this->faker->paragraph(4) . '</p>',
-            
+
             '<h2>Conclusion</h2>',
             '<p>' . $this->faker->paragraph(3) . '</p>',
             '<p>' . $this->faker->paragraph(2) . '</p>',

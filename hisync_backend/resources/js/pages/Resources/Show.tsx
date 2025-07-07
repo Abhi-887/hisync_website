@@ -32,7 +32,7 @@ interface Resource {
     is_featured: boolean;
     is_trending: boolean;
     featured_image?: string;
-    gallery_images: string[];
+    gallery_images: string[] | null;
     read_time: number;
     view_count: number;
     share_count: number;
@@ -261,7 +261,7 @@ export default function ShowResource({ resource, relatedResources }: PageProps) 
                         </Card>
 
                         {/* Gallery Images */}
-                        {resource.gallery_images.length > 0 && (
+                        {resource.gallery_images && resource.gallery_images.length > 0 && (
                             <Card className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Gallery Images</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

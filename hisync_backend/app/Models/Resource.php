@@ -51,6 +51,20 @@ class Resource extends Model
         'seo_score' => 'integer'
     ];
 
+    protected $attributes = [
+        'gallery_images' => '[]',
+        'tags' => '[]',
+        'view_count' => 0,
+        'share_count' => 0,
+        'like_count' => 0,
+        'read_time' => 1,
+        'seo_score' => 0,
+        'is_featured' => false,
+        'is_trending' => false,
+        'is_published' => false,
+        'status' => 'draft'
+    ];
+
     protected $dates = [
         'published_at'
     ];
@@ -100,12 +114,12 @@ class Resource extends Model
         if (!$this->featured_image) {
             return null;
         }
-        
+
         // If it's already a full URL, return as is
         if (Str::startsWith($this->featured_image, ['http://', 'https://'])) {
             return $this->featured_image;
         }
-        
+
         // Otherwise, construct the full URL
         return config('app.url') . '/storage/' . $this->featured_image;
     }
@@ -260,7 +274,7 @@ class Resource extends Model
     public static function getPopularTags($limit = 20)
     {
         $tagCounts = [];
-        
+
         static::published()
             ->whereNotNull('tags')
             ->get(['tags'])
@@ -271,7 +285,7 @@ class Resource extends Model
             });
 
         arsort($tagCounts);
-        
+
         return array_slice($tagCounts, 0, $limit, true);
     }
 
@@ -279,7 +293,7 @@ class Resource extends Model
     public function generateSeoScore()
     {
         $score = 0;
-        
+
         // Title optimization (0-25 points)
         if ($this->title) {
             $titleLength = strlen($this->title);
@@ -291,7 +305,7 @@ class Resource extends Model
                 $score += 10;
             }
         }
-        
+
         // Meta description (0-20 points)
         if ($this->meta_description) {
             $metaLength = strlen($this->meta_description);
@@ -303,7 +317,7 @@ class Resource extends Model
                 $score += 10;
             }
         }
-        
+
         // Content length (0-15 points)
         if ($this->content) {
             $wordCount = str_word_count(strip_tags($this->content));
@@ -315,36 +329,36 @@ class Resource extends Model
                 $score += 5;
             }
         }
-        
+
         // Featured image (0-10 points)
         if ($this->featured_image) {
             $score += 10;
         }
-        
+
         // Tags (0-10 points)
         if ($this->tags && count($this->tags) >= 3) {
             $score += 10;
         } elseif ($this->tags && count($this->tags) >= 1) {
             $score += 5;
         }
-        
+
         // Category (0-5 points)
         if ($this->category) {
             $score += 5;
         }
-        
+
         // Excerpt (0-10 points)
         if ($this->excerpt) {
             $score += 10;
         }
-        
+
         // Slug optimization (0-5 points)
         if ($this->slug && strlen($this->slug) <= 75) {
             $score += 5;
         }
-        
+
         $this->update(['seo_score' => $score]);
-        
+
         return $score;
     }
 }

@@ -20,34 +20,34 @@ return new class extends Migration
             $table->string('category');
             $table->json('tags')->nullable();
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
-            
+
             // SEO fields
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->string('meta_keywords')->nullable();
-            
+
             // Media fields
             $table->string('featured_image')->nullable();
             $table->json('gallery_images')->nullable();
-            
+
             // Status fields
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_trending')->default(false);
             $table->boolean('is_published')->default(false);
             $table->timestamp('published_at')->nullable();
             $table->enum('status', ['draft', 'review', 'published', 'archived'])->default('draft');
-            
+
             // Analytics fields
             $table->integer('view_count')->default(0);
             $table->integer('share_count')->default(0);
             $table->integer('like_count')->default(0);
             $table->integer('read_time')->nullable(); // in minutes
             $table->integer('seo_score')->default(0);
-            
+
             // Timestamps
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indexes
             $table->index(['is_published', 'published_at']);
             $table->index(['category']);
@@ -56,7 +56,7 @@ return new class extends Migration
             $table->index(['status']);
             $table->index(['view_count']);
             $table->index(['author_id']);
-            
+
             // Note: Full-text search indexes are not supported in SQLite
             // For production MySQL/PostgreSQL, uncomment the following:
             // $table->fullText(['title', 'excerpt', 'content']);

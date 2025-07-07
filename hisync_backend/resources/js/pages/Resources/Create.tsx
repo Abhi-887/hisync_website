@@ -64,10 +64,10 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Set the tags before submitting
         setData('tags', selectedTags);
-        
+
         post('/resources', {
             forceFormData: true,
             onSuccess: () => {
@@ -165,7 +165,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* Basic Information */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -220,7 +220,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* Content */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Content</h2>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Content *
@@ -244,7 +244,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* SEO Settings */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -299,7 +299,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* Publish Settings */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Publish Settings</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -408,7 +408,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* Tags */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Tags</h2>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex space-x-2">
                                     <input
@@ -465,7 +465,7 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                         {/* Images */}
                         <Card className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Images</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
