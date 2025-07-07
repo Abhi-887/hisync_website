@@ -3,14 +3,14 @@ import { Metadata } from 'next';
 import ResourcesCategoryPage from '../../../../components/resources/ResourcesCategoryPage';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     page?: string;
     sort?: string;
     search?: string;
-  };
+  }>;
 }
 
 interface CategoryResource {

@@ -3,9 +3,9 @@ import { Metadata } from 'next';
 import ResourceDetailPage from '../../../components/resources/ResourceDetailPage';
 
 interface ResourcePageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 interface Resource {
@@ -96,7 +96,8 @@ async function getResource(slug: string): Promise<ApiResponse | null> {
 }
 
 export async function generateMetadata({ params }: ResourcePageProps): Promise<Metadata> {
-  const resourceData = await getResource(params.slug);
+  const resolvedParams = await params;
+  const resourceData = await getResource(resolvedParams.slug);
   
   if (!resourceData || !resourceData.success) {
     return {
@@ -148,7 +149,8 @@ export async function generateMetadata({ params }: ResourcePageProps): Promise<M
 }
 
 export default async function ResourcePage({ params }: ResourcePageProps) {
-  const resourceData = await getResource(params.slug);
+  const resolvedParams = await params;
+  const resourceData = await getResource(resolvedParams.slug);
   
   if (!resourceData || !resourceData.success) {
     notFound();
