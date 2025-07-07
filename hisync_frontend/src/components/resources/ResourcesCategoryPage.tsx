@@ -55,10 +55,10 @@ interface Resource {
 
 interface ResourcesCategoryPageProps {
   category: string;
-  initialResources: Resource[];
+  initialResources?: Resource[];
   totalCount: number;
-  featuredResources: Resource[];
-  relatedCategories: string[];
+  featuredResources?: Resource[];
+  relatedCategories?: string[];
 }
 
 const RESOURCES_API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1';
@@ -70,18 +70,18 @@ export default function ResourcesCategoryPage({
   featuredResources,
   relatedCategories
 }: ResourcesCategoryPageProps) {
-  const [resources, setResources] = useState<Resource[]>(initialResources);
+  const [resources, setResources] = useState<Resource[]>(initialResources || []);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(totalCount > initialResources.length);
+  const [hasMore, setHasMore] = useState(totalCount > (initialResources || []).length);
 
   // Get all unique tags from resources
   const allTags = Array.from(
-    new Set(resources.flatMap(resource => resource.tags || []))
+    new Set((resources || []).flatMap(resource => resource.tags || []))
   ).sort();
 
   const fetchResources = async (page = 1, reset = false) => {
@@ -105,14 +105,19 @@ export default function ResourcesCategoryPage({
       const response = await fetch(`${RESOURCES_API_BASE}/resources?${params}`);
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.data && data.data.data) {
         if (reset || page === 1) {
-          setResources(data.data.data);
+          setResources(data.data.data || []);
         } else {
-          setResources(prev => [...prev, ...data.data.data]);
+          setResources(prev => [...(prev || []), ...(data.data.data || [])]);
         }
         setHasMore(data.data.current_page < data.data.last_page);
         setCurrentPage(data.data.current_page);
+      } else {
+        // If no success or data, set empty array
+        if (reset || page === 1) {
+          setResources([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching resources:', error);
@@ -213,7 +218,7 @@ export default function ResourcesCategoryPage({
             </div>
             <div className="flex items-center">
               <Star className="h-4 w-4 mr-1 text-yellow-500" />
-              <span className="font-semibold text-gray-900">{featuredResources.length}</span>
+              <span className="font-semibold text-gray-900">{(featuredResources || []).length}</span>
               <span className="ml-1">Featured</span>
             </div>
             <div className="flex items-center">
@@ -225,7 +230,7 @@ export default function ResourcesCategoryPage({
       </section>
 
       {/* Featured Resources */}
-      {featuredResources.length > 0 && (
+      {featuredResources && featuredResources.length > 0 && (
         <section className="py-12 bg-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -239,7 +244,7 @@ export default function ResourcesCategoryPage({
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredResources.slice(0, 3).map((resource, index) => (
+              {(featuredResources || []).slice(0, 3).map((resource, index) => (
                 <motion.article
                   key={resource.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -406,12 +411,12 @@ export default function ResourcesCategoryPage({
       {/* Resources Grid/List */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading && resources.length === 0 ? (
+          {loading && (resources || []).length === 0 ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading resources...</p>
             </div>
-          ) : resources.length === 0 ? (
+          ) : (resources || []).length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <Search className="h-12 w-12 mx-auto" />
@@ -431,7 +436,7 @@ export default function ResourcesCategoryPage({
                   ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
                   : 'space-y-6'
               }>
-                {resources.map((resource, index) => (
+                {(resources || []).map((resource, index) => (
                   <motion.article
                     key={resource.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -583,7 +588,7 @@ export default function ResourcesCategoryPage({
       </section>
 
       {/* Related Categories */}
-      {relatedCategories.length > 0 && (
+      {relatedCategories && relatedCategories.length > 0 && (
         <section className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -597,7 +602,7 @@ export default function ResourcesCategoryPage({
             </motion.div>
 
             <div className="flex flex-wrap justify-center gap-4">
-              {relatedCategories.map((relatedCategory, index) => (
+              {(relatedCategories || []).map((relatedCategory, index) => (
                 <motion.div
                   key={relatedCategory}
                   initial={{ opacity: 0, y: 20 }}

@@ -50,13 +50,43 @@ interface CategoryApiResponse {
   };
 }
 
+// Map URL slugs to actual category names in database
+function slugToCategory(slug: string): string {
+  const categoryMap: Record<string, string> = {
+    'guides-tutorials': 'Guides & Tutorials',
+    'guides-&-tutorials': 'Guides & Tutorials',
+    'technical-deep-dives': 'Technical Deep Dives',
+    'case-studies': 'Case Studies', 
+    'best-practices': 'Best Practices',
+    'industry-insights': 'Industry Insights',
+    'security-compliance': 'Security & Compliance',
+    'security-&-compliance': 'Security & Compliance',
+    'product-updates': 'Product Updates',
+    'performance-optimization': 'Performance Optimization',
+    'integration-guides': 'Integration Guides',
+    'enterprise-solutions': 'Enterprise Solutions',
+  };
+  
+  // If exact match found, return it
+  if (categoryMap[slug.toLowerCase()]) {
+    return categoryMap[slug.toLowerCase()];
+  }
+  
+  // Otherwise, try to convert slug to title case
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 async function getCategoryResources(
-  category: string,
+  categorySlug: string,
   page: number = 1,
   sort: string = 'latest',
   search?: string
 ): Promise<CategoryApiResponse | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const actualCategory = slugToCategory(categorySlug);
   
   try {
     const params = new URLSearchParams({
@@ -65,7 +95,7 @@ async function getCategoryResources(
       ...(search && { search }),
     });
 
-    const res = await fetch(`${apiUrl}/api/v1/resources/category/${encodeURIComponent(category)}?${params}`, {
+    const res = await fetch(`${apiUrl}/api/v1/resources/category/${encodeURIComponent(actualCategory)}?${params}`, {
       cache: 'no-store',
       headers: {
         'Accept': 'application/json',
@@ -88,7 +118,8 @@ async function getCategoryResources(
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const decodedCategory = decodeURIComponent(params.category);
+  const resolvedParams = await params;
+  const decodedCategory = decodeURIComponent(resolvedParams.category);
   const categoryData = await getCategoryResources(decodedCategory);
   
   if (!categoryData || !categoryData.success) {
@@ -116,16 +147,19 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description: `Expert ${category.toLowerCase()} resources and insights.`,
     },
     alternates: {
-      canonical: `/resources/category/${params.category}`,
+      canonical: `/resources/category/${resolvedParams.category}`,
     },
   };
 }
 
 export default async function ResourcesCategoryPageRoute({ params, searchParams }: CategoryPageProps) {
-  const decodedCategory = decodeURIComponent(params.category);
-  const page = parseInt(searchParams.page || '1', 10);
-  const sort = searchParams.sort || 'latest';
-  const search = searchParams.search;
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  
+  const decodedCategory = decodeURIComponent(resolvedParams.category);
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
+  const sort = resolvedSearchParams.sort || 'latest';
+  const search = resolvedSearchParams.search;
   
   const categoryData = await getCategoryResources(decodedCategory, page, sort, search);
   
@@ -141,7 +175,7 @@ export default async function ResourcesCategoryPageRoute({ params, searchParams 
   return (
     <ResourcesCategoryPage
       category={categoryData.data.category}
-      initialResources={categoryData.data.resources.map(resource => ({
+      initialResources={(categoryData.data.resources || []).map(resource => ({
         ...resource,
         content: resource.excerpt, // Use excerpt as content for listing
         is_featured: false, // Default for listing view
@@ -156,7 +190,7 @@ export default async function ResourcesCategoryPageRoute({ params, searchParams 
           email: 'author@example.com' // Provide default email since it's not in CategoryResource
         }
       }))}
-      totalCount={categoryData.data.pagination.total}
+      totalCount={categoryData.data.pagination?.total || 0}
       featuredResources={[]} // Will be fetched separately by component if needed
       relatedCategories={relatedCategories}
     />
