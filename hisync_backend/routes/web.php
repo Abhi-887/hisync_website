@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContactInquiryController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,6 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('faqs/{faq}/toggle-status', [FaqController::class, 'toggleStatus'])->name('faqs.toggle-status');
     Route::patch('faqs/{faq}/toggle-featured', [FaqController::class, 'toggleFeatured'])->name('faqs.toggle-featured');
     Route::post('faqs/bulk-action', [FaqController::class, 'bulkAction'])->name('faqs.bulk-action');
+
+    // Resources Management
+    Route::resource('resources', ResourceController::class);
+    Route::post('resources/bulk-action', [ResourceController::class, 'bulkAction'])->name('resources.bulk-action');
+    Route::post('resources/{resource}/seo-score', [ResourceController::class, 'generateSeoScore'])->name('resources.seo-score');
+    Route::get('resources-analytics', [ResourceController::class, 'analytics'])->name('resources.analytics');
 });
 
 require __DIR__.'/settings.php';

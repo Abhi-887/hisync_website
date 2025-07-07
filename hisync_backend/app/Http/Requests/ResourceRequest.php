@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,24 +38,24 @@ class ResourceRequest extends FormRequest
             'tags' => 'nullable|array|max:10',
             'tags.*' => 'string|max:50',
             'author_id' => 'required|exists:users,id',
-            
+
             // SEO fields
             'meta_title' => 'nullable|string|max:60',
             'meta_description' => 'nullable|string|max:160',
             'meta_keywords' => 'nullable|string|max:255',
-            
+
             // Media fields
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'gallery_images' => 'nullable|array|max:5',
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            
+
             // Status fields
             'is_featured' => 'boolean',
             'is_trending' => 'boolean',
             'is_published' => 'boolean',
             'published_at' => 'nullable|date',
             'status' => 'required|in:draft,review,published,archived',
-            
+
             // Analytics fields (usually not editable via form)
             'read_time' => 'nullable|integer|min:1|max:60',
         ];

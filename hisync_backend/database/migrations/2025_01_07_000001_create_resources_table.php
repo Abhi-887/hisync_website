@@ -56,7 +56,10 @@ return new class extends Migration
             $table->index(['status']);
             $table->index(['view_count']);
             $table->index(['author_id']);
-            $table->fullText(['title', 'excerpt', 'content']);
+            
+            // Note: Full-text search indexes are not supported in SQLite
+            // For production MySQL/PostgreSQL, uncomment the following:
+            // $table->fullText(['title', 'excerpt', 'content']);
         });
     }
 
