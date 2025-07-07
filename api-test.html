@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Contact API Test</h1>
+    
+    <form id="contactForm">
+        <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company">
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone">
+        </div>
+        
+        <div class="form-group">
+            <label for="service">Service Interest</label>
+            <select id="service" name="service">
+                <option value="">Select a service</option>
+                <option value="ERP Implementation">ERP Implementation</option>
+                <option value="Process Automation">Process Automation</option>
+                <option value="Business Consulting">Business Consulting</option>
+                <option value="Digital Transformation">Digital Transformation</option>
+                <option value="System Integration">System Integration</option>
+                <option value="Training & Support">Training & Support</option>
+                <option value="Custom Development">Custom Development</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="message">Message *</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+        
+        <button type="submit">Submit Contact Form</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Submitting...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>Success!</h3>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                            <p><strong>Reference Number:</strong> ${result.data.reference_number}</p>
+                            <p><strong>Inquiry ID:</strong> ${result.data.inquiry_id}</p>
+                            <p><strong>Status:</strong> ${result.data.status}</p>
+                        </div>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>Error</h3>
+                            <p>${result.message}</p>
+                            ${result.errors ? '<pre>' + JSON.stringify(result.errors, null, 2) + '</pre>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>Network Error</h3>
+                        <p>Failed to connect to the API. Make sure the Laravel server is running on http://localhost:8000</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
