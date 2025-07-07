@@ -75,6 +75,16 @@ interface ResourcesPageProps {
 const RESOURCES_API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1';
 
 const categoryIcons: Record<string, any> = {
+  'guides-&-tutorials': BookOpen,
+  'technical-deep-dives': Zap,
+  'case-studies': BarChart,
+  'best-practices': Award,
+  'industry-insights': Lightbulb,
+  'security-&-compliance': Target,
+  'product-updates': TrendingUp,
+  'performance-optimization': Users,
+  'integration-guides': BookOpen,
+  'enterprise-solutions': BarChart,
   'technology': Zap,
   'business': BarChart,
   'design': Lightbulb,
@@ -86,6 +96,16 @@ const categoryIcons: Record<string, any> = {
 };
 
 const categoryColors: Record<string, string> = {
+  'guides-&-tutorials': 'from-blue-500 to-cyan-500',
+  'technical-deep-dives': 'from-indigo-500 to-purple-500',
+  'case-studies': 'from-green-500 to-emerald-500',
+  'best-practices': 'from-yellow-500 to-orange-500',
+  'industry-insights': 'from-purple-500 to-pink-500',
+  'security-&-compliance': 'from-red-500 to-pink-500',
+  'product-updates': 'from-teal-500 to-green-500',
+  'performance-optimization': 'from-orange-500 to-red-500',
+  'integration-guides': 'from-cyan-500 to-blue-500',
+  'enterprise-solutions': 'from-gray-500 to-slate-500',
   'technology': 'from-blue-500 to-cyan-500',
   'business': 'from-green-500 to-emerald-500',
   'design': 'from-purple-500 to-pink-500',
@@ -146,16 +166,26 @@ export default function ResourcesPage({
   };
 
   // Enhanced categories with icons and descriptions
-  const enhancedCategories: Category[] = categories.map(cat => ({
+  const enhancedCategories: Category[] = (categories || []).map(cat => ({
     name: cat.name,
     count: cat.count,
-    icon: categoryIcons[cat.name.toLowerCase()] || BookOpen,
+    icon: categoryIcons[cat.name.toLowerCase().replace(/\s+/g, '-')] || BookOpen,
     description: getCategoryDescription(cat.name),
-    color: categoryColors[cat.name.toLowerCase()] || 'from-gray-500 to-gray-600'
+    color: categoryColors[cat.name.toLowerCase().replace(/\s+/g, '-')] || 'from-gray-500 to-gray-600'
   }));
 
   function getCategoryDescription(category: string): string {
     const descriptions: Record<string, string> = {
+      'guides & tutorials': 'Step-by-step guides and practical tutorials',
+      'technical deep dives': 'In-depth technical analysis and insights',
+      'case studies': 'Real-world implementation examples and success stories',
+      'best practices': 'Industry standards and proven methodologies',
+      'industry insights': 'Market trends and strategic analysis',
+      'security & compliance': 'Security protocols and compliance guidelines',
+      'product updates': 'Latest features and product announcements',
+      'performance optimization': 'Tips and techniques for better performance',
+      'integration guides': 'Integration tutorials and API documentation',
+      'enterprise solutions': 'Enterprise-level solutions and strategies',
       'technology': 'Latest tech trends, tools, and innovations',
       'business': 'Strategic insights and business growth',
       'design': 'Creative concepts and design thinking',
@@ -260,12 +290,12 @@ export default function ResourcesPage({
               </div>
               <div className="flex items-center">
                 <Star className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="font-semibold text-gray-900">{featuredResources.length}</span>
+                <span className="font-semibold text-gray-900">{(featuredResources || []).length}</span>
                 <span className="ml-1">Featured</span>
               </div>
               <div className="flex items-center">
                 <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
-                <span className="font-semibold text-gray-900">{categories.length}</span>
+                <span className="font-semibold text-gray-900">{(categories || []).length}</span>
                 <span className="ml-1">Categories</span>
               </div>
               <div className="flex items-center">
@@ -328,7 +358,7 @@ export default function ResourcesPage({
       </section>
 
       {/* Featured Resources */}
-      {featuredResources.length > 0 && (
+      {featuredResources && featuredResources.length > 0 && (
         <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -425,7 +455,7 @@ export default function ResourcesPage({
       )}
 
       {/* Trending Resources */}
-      {trendingResources.length > 0 && (
+      {trendingResources && trendingResources.length > 0 && (
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -524,7 +554,7 @@ export default function ResourcesPage({
       )}
 
       {/* Latest Resources */}
-      {latestResources.length > 0 && (
+      {latestResources && latestResources.length > 0 && (
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div

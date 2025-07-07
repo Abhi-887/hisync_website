@@ -39,11 +39,19 @@ async function getResourcesData() {
       categoriesRes.json()
     ]);
 
+    // Transform categories object to array format
+    const categoriesArray = categories.success && categories.data.categories 
+      ? Object.entries(categories.data.categories).map(([name, count]) => ({
+          name,
+          count: count as number
+        }))
+      : [];
+
     return {
       featuredResources: featured.success ? featured.data.data : [],
       trendingResources: trending.success ? trending.data.data : [],
       latestResources: latest.success ? latest.data.data : [],
-      categories: categories.success ? categories.data : [],
+      categories: categoriesArray,
       totalCount: featured.success ? featured.data.total : 0
     };
   } catch (error) {
