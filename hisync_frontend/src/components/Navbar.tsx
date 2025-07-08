@@ -118,18 +118,20 @@ export default function Navbar() {
                 {/* Services */}
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <button
-                      onClick={() => scrollToSection("#services")}
+                    <Link 
+                      href="/services"
                       className={cn(
                         navigationMenuTriggerStyle(),
                         "bg-transparent font-medium rounded-lg h-9 px-4 text-sm transition-all duration-200",
-                        isScrolled 
-                          ? "text-gray-700 hover:text-blue-600 hover:bg-gray-100/60" 
-                          : "text-gray-800 hover:text-blue-600 hover:bg-white/20"
+                        isActive("/services")
+                          ? "bg-blue-100 text-blue-700 font-semibold"
+                          : isScrolled 
+                            ? "text-gray-700 hover:text-blue-600 hover:bg-gray-100/60" 
+                            : "text-gray-800 hover:text-blue-600 hover:bg-white/20"
                       )}
                     >
                       Services
-                    </button>
+                    </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
 
@@ -270,16 +272,19 @@ export default function Navbar() {
             <span>Home</span>
           </Link>
 
-          <button
-            onClick={() => {
-              scrollToSection("#services");
-              setIsMobileMenuOpen(false);
-            }}
-            className="flex items-center justify-between text-gray-700 hover:text-blue-600 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 group w-full text-left"
+          <Link
+            href="/services"
+            className={cn(
+              "flex items-center justify-between py-3 px-4 rounded-lg font-medium transition-all duration-200 group",
+              isActive("/services")
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+            )}
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             <span>Services</span>
-            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
-          </button>
+            {isActive("/services") && <div className="w-2 h-2 bg-blue-600 rounded-full" />}
+          </Link>
 
           <Link
             href="/product"
