@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, HelpCircle, LayoutGrid, MessageSquare, FileText } from 'lucide-react';
+import { BookOpen, Folder, HelpCircle, LayoutGrid, MessageSquare, FileText, FolderOpen, Tags, BarChart3 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -24,9 +24,31 @@ const mainNavItems: NavItem[] = [
         icon: HelpCircle,
     },
     {
-        title: 'Resource Management',
+        title: 'Resources',
         href: '/resources',
         icon: FileText,
+        items: [
+            {
+                title: 'All Resources',
+                href: '/resources',
+                icon: FileText,
+            },
+            {
+                title: 'Categories',
+                href: '/resource-categories',
+                icon: FolderOpen,
+            },
+            {
+                title: 'Create Resource',
+                href: '/resources/create',
+                icon: FileText,
+            },
+            {
+                title: 'Create Category',
+                href: '/resource-categories/create',
+                icon: FolderOpen,
+            },
+        ],
     },
 ];
 

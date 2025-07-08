@@ -6,13 +6,11 @@ import {
     Eye,
     Edit,
     Trash2,
-    BookOpen,
+    FolderOpen,
     Star,
-    TrendingUp,
+    Hash,
     Calendar,
-    Clock,
-    User,
-    Tag,
+    Users,
     BarChart3,
     Plus,
     MoreHorizontal,
@@ -22,7 +20,12 @@ import {
     Archive,
     CheckCircle,
     XCircle,
-    AlertCircle
+    AlertCircle,
+    Layers,
+    TreePine,
+    Move,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -33,195 +36,177 @@ import { type BreadcrumbItem } from '@/types';
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Resources', href: '/resources' },
+    { title: 'Categories', href: '/resource-categories' },
 ];
 
-interface Resource {
+interface ResourceCategory {
     id: number;
-    title: string;
+    name: string;
     slug: string;
-    excerpt: string;
-    content: string;
-    category_id?: number;
-    category?: {
-        id: number;
-        name: string;
-        color?: string;
-        slug: string;
-    };
-    tags: string[];
-    status: 'draft' | 'review' | 'published' | 'archived';
-    is_published: boolean;
-    is_featured: boolean;
-    is_trending: boolean;
+    description?: string;
+    color: string;
+    icon?: string;
     featured_image?: string;
-    read_time: number;
-    view_count: number;
-    share_count: number;
-    like_count: number;
-    seo_score: number;
-    published_at?: string;
+    parent_id?: number;
+    meta_title?: string;
+    meta_description?: string;
+    meta_keywords?: string;
+    is_active: boolean;
+    is_featured: boolean;
+    sort_order: number;
+    resource_count: number;
+    resources_count: number;
+    active_resources_count: number;
     created_at: string;
-    author: {
+    parent?: {
         id: number;
         name: string;
-        email: string;
     };
+    children?: ResourceCategory[];
+    hierarchy_level: number;
+    breadcrumb: Array<{
+        id: number;
+        name: string;
+        slug: string;
+        url: string;
+    }>;
 }
 
 interface Stats {
     total: number;
-    published: number;
-    draft: number;
+    active: number;
+    inactive: number;
     featured: number;
-    trending: number;
-    today: number;
-    this_month: number;
-    total_views: number;
-    avg_seo_score: number;
+    with_resources: number;
+    root_categories: number;
+    total_resources: number;
 }
 
 interface PageProps extends Record<string, any> {
-    resources: {
-        data: Resource[];
+    categories: {
+        data: ResourceCategory[];
         links?: any[];
         meta?: any;
     };
     stats?: Stats;
     filters?: {
         statuses?: Array<{ value: string; label: string }>;
-        categories?: Array<{ value: string; label: string }>;
-        authors?: Array<{ value: string; label: string }>;
+        parents?: Array<{ value: string; label: string }>;
     };
     queryParams?: {
         status?: string;
-        category?: string;
-        author?: string;
         featured?: string;
-        trending?: string;
+        parent?: string;
         search?: string;
+        sort_by?: string;
+        sort_order?: string;
     };
 }
 
-export default function ResourcesIndex() {
-    const { resources, stats, filters, queryParams } = usePage<PageProps>().props;
+export default function ResourceCategoriesIndex() {
+    const { categories, stats, filters, queryParams } = usePage<PageProps>().props;
     const [searchTerm, setSearchTerm] = useState(queryParams?.search || '');
     const [selectedStatus, setSelectedStatus] = useState(queryParams?.status || 'all');
-    const [selectedCategory, setSelectedCategory] = useState(queryParams?.category || 'all');
-    const [selectedAuthor, setSelectedAuthor] = useState(queryParams?.author || 'all');
-    const [selectedResources, setSelectedResources] = useState<number[]>([]);
+    const [selectedParent, setSelectedParent] = useState(queryParams?.parent || 'all');
+    const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
     const handleSearch = () => {
         const params = new URLSearchParams();
         if (searchTerm) params.set('search', searchTerm);
         if (selectedStatus !== 'all') params.set('status', selectedStatus);
-        if (selectedCategory !== 'all') params.set('category', selectedCategory);
-        if (selectedAuthor !== 'all') params.set('author', selectedAuthor);
+        if (selectedParent !== 'all') params.set('parent', selectedParent);
 
-        router.get(`/resources?${params.toString()}`);
+        router.get(`/resource-categories?${params.toString()}`);
     };
 
     const handleReset = () => {
         setSearchTerm('');
         setSelectedStatus('all');
-        setSelectedCategory('all');
-        setSelectedAuthor('all');
-        router.get('/resources');
+        setSelectedParent('all');
+        router.get('/resource-categories');
     };
 
     const handleBulkAction = (action: string) => {
-        if (selectedResources.length === 0) return;
+        if (selectedCategories.length === 0) return;
 
-        router.post('/resources/bulk-action', {
+        router.post('/resource-categories/bulk-action', {
             action,
-            resource_ids: selectedResources
+            category_ids: selectedCategories
         }, {
             onSuccess: () => {
-                setSelectedResources([]);
+                setSelectedCategories([]);
             }
         });
     };
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedResources(resources.data.map(r => r.id));
+            setSelectedCategories(categories.data.map(c => c.id));
         } else {
-            setSelectedResources([]);
+            setSelectedCategories([]);
         }
     };
 
-    const handleSelectResource = (resourceId: number, checked: boolean) => {
+    const handleSelectCategory = (categoryId: number, checked: boolean) => {
         if (checked) {
-            setSelectedResources([...selectedResources, resourceId]);
+            setSelectedCategories([...selectedCategories, categoryId]);
         } else {
-            setSelectedResources(selectedResources.filter(id => id !== resourceId));
+            setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
         }
     };
 
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'draft':
-                return <FileText className="w-4 h-4" />;
-            case 'review':
-                return <AlertCircle className="w-4 h-4" />;
-            case 'published':
-                return <CheckCircle className="w-4 h-4" />;
-            case 'archived':
-                return <Archive className="w-4 h-4" />;
-            default:
-                return <FileText className="w-4 h-4" />;
-        }
+    const getStatusIcon = (isActive: boolean) => {
+        return isActive ?
+            <CheckCircle className="w-4 h-4" /> :
+            <XCircle className="w-4 h-4" />;
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'draft':
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-            case 'review':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'published':
-                return 'bg-green-100 text-green-800 border-green-200';
-            case 'archived':
-                return 'bg-red-100 text-red-800 border-red-200';
-            default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-        }
+    const getStatusColor = (isActive: boolean) => {
+        return isActive ?
+            'bg-green-100 text-green-800 border-green-200' :
+            'bg-red-100 text-red-800 border-red-200';
     };
 
-    const getSeoScoreColor = (score: number) => {
-        if (score >= 80) return 'text-green-600';
-        if (score >= 60) return 'text-yellow-600';
-        return 'text-red-600';
+    const getHierarchyIndent = (level: number) => {
+        return level * 20; // 20px per level
+    };
+
+    const reorderCategory = (categoryId: number, direction: 'up' | 'down') => {
+        router.post('/resource-categories/reorder', {
+            category_id: categoryId,
+            direction: direction
+        });
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Resources Management" />
+            <Head title="Resource Categories Management" />
 
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Resources Management</h1>
-                        <p className="text-gray-600">Create and manage your knowledge base resources</p>
+                        <h1 className="text-2xl font-bold text-gray-900">Resource Categories</h1>
+                        <p className="text-gray-600">Organize your resources with categories and subcategories</p>
                     </div>
-                    <Link href="/resources/create">
+                    <Link href="/resource-categories/create">
                         <Button className="flex items-center">
                             <Plus className="w-4 h-4 mr-2" />
-                            Create Resource
+                            Create Category
                         </Button>
                     </Link>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Resources</p>
+                                <p className="text-sm font-medium text-gray-600">Total Categories</p>
                                 <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
                             </div>
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <BookOpen className="w-4 h-4 text-blue-600" />
+                                <FolderOpen className="w-4 h-4 text-blue-600" />
                             </div>
                         </div>
                     </Card>
@@ -229,11 +214,11 @@ export default function ResourcesIndex() {
                     <Card className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Published</p>
-                                <p className="text-2xl font-bold text-green-600">{stats?.published || 0}</p>
+                                <p className="text-sm font-medium text-gray-600">Active</p>
+                                <p className="text-2xl font-bold text-green-600">{stats?.active || 0}</p>
                             </div>
                             <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <Globe className="w-4 h-4 text-green-600" />
+                                <CheckCircle className="w-4 h-4 text-green-600" />
                             </div>
                         </div>
                     </Card>
@@ -253,25 +238,11 @@ export default function ResourcesIndex() {
                     <Card className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Views</p>
-                                <p className="text-2xl font-bold text-purple-600">{stats?.total_views?.toLocaleString() || 0}</p>
+                                <p className="text-sm font-medium text-gray-600">Total Resources</p>
+                                <p className="text-2xl font-bold text-purple-600">{stats?.total_resources?.toLocaleString() || 0}</p>
                             </div>
                             <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                                 <BarChart3 className="w-4 h-4 text-purple-600" />
-                            </div>
-                        </div>
-                    </Card>
-
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Avg SEO Score</p>
-                                <p className={`text-2xl font-bold ${getSeoScoreColor(stats?.avg_seo_score || 0)}`}>
-                                    {stats?.avg_seo_score || 0}%
-                                </p>
-                            </div>
-                            <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <TrendingUp className="w-4 h-4 text-indigo-600" />
                             </div>
                         </div>
                     </Card>
@@ -285,7 +256,7 @@ export default function ResourcesIndex() {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <input
                                     type="text"
-                                    placeholder="Search resources..."
+                                    placeholder="Search categories..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -307,39 +278,26 @@ export default function ResourcesIndex() {
                                 )) || (
                                     <>
                                         <option value="all">All Statuses</option>
-                                        <option value="draft">Draft</option>
-                                        <option value="review">In Review</option>
-                                        <option value="published">Published</option>
-                                        <option value="archived">Archived</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
                                     </>
                                 )}
                             </select>
 
                             <select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                value={selectedParent}
+                                onChange={(e) => setSelectedParent(e.target.value)}
                                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                {filters?.categories?.map((category) => (
-                                    <option key={category.value} value={category.value}>
-                                        {category.label}
+                                {filters?.parents?.map((parent) => (
+                                    <option key={parent.value} value={parent.value}>
+                                        {parent.label}
                                     </option>
                                 )) || (
-                                    <option value="all">All Categories</option>
-                                )}
-                            </select>
-
-                            <select
-                                value={selectedAuthor}
-                                onChange={(e) => setSelectedAuthor(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                {filters?.authors?.map((author) => (
-                                    <option key={author.value} value={author.value}>
-                                        {author.label}
-                                    </option>
-                                )) || (
-                                    <option value="all">All Authors</option>
+                                    <>
+                                        <option value="all">All Categories</option>
+                                        <option value="root">Root Categories Only</option>
+                                    </>
                                 )}
                             </select>
 
@@ -356,19 +314,19 @@ export default function ResourcesIndex() {
                 </Card>
 
                 {/* Bulk Actions */}
-                {selectedResources.length > 0 && (
+                {selectedCategories.length > 0 && (
                     <Card className="p-4">
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
-                                {selectedResources.length} resource(s) selected
+                                {selectedCategories.length} category(ies) selected
                             </span>
                             <div className="flex gap-2">
                                 <Button
                                     size="sm"
-                                    onClick={() => handleBulkAction('publish')}
+                                    onClick={() => handleBulkAction('activate')}
                                     className="bg-green-600 hover:bg-green-700"
                                 >
-                                    Publish
+                                    Activate
                                 </Button>
                                 <Button
                                     size="sm"
@@ -379,10 +337,10 @@ export default function ResourcesIndex() {
                                 </Button>
                                 <Button
                                     size="sm"
-                                    onClick={() => handleBulkAction('trend')}
-                                    className="bg-orange-600 hover:bg-orange-700"
+                                    onClick={() => handleBulkAction('deactivate')}
+                                    className="bg-gray-600 hover:bg-gray-700"
                                 >
-                                    Mark Trending
+                                    Deactivate
                                 </Button>
                                 <Button
                                     size="sm"
@@ -396,7 +354,7 @@ export default function ResourcesIndex() {
                     </Card>
                 )}
 
-                {/* Resources Table */}
+                {/* Categories Table */}
                 <Card className="flex-1">
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -405,31 +363,28 @@ export default function ResourcesIndex() {
                                     <th className="px-6 py-3 text-left">
                                         <input
                                             type="checkbox"
-                                            checked={selectedResources.length === resources.data.length && resources.data.length > 0}
+                                            checked={selectedCategories.length === categories.data.length && categories.data.length > 0}
                                             onChange={(e) => handleSelectAll(e.target.checked)}
                                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Resource
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Category
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Author
+                                        Parent
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Stats
+                                        Resources
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        SEO Score
+                                        Order
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date
+                                        Created
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Actions
@@ -437,58 +392,62 @@ export default function ResourcesIndex() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {resources.data && resources.data.map((resource) => (
-                                    <tr key={resource.id} className="hover:bg-gray-50">
+                                {categories.data && categories.data.map((category) => (
+                                    <tr key={category.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedResources.includes(resource.id)}
-                                                onChange={(e) => handleSelectResource(resource.id, e.target.checked)}
+                                                checked={selectedCategories.includes(category.id)}
+                                                onChange={(e) => handleSelectCategory(category.id, e.target.checked)}
                                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                             />
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex items-start space-x-3">
-                                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    {resource.featured_image ? (
+                                            <div className="flex items-start space-x-3" style={{ paddingLeft: `${getHierarchyIndent(category.hierarchy_level)}px` }}>
+                                                <div
+                                                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                    style={{ backgroundColor: category.color + '20', color: category.color }}
+                                                >
+                                                    {category.featured_image ? (
                                                         <img
-                                                            src={`/storage/${resource.featured_image}`}
-                                                            alt={resource.title}
-                                                            className="w-12 h-12 object-cover rounded-lg"
+                                                            src={`/storage/${category.featured_image}`}
+                                                            alt={category.name}
+                                                            className="w-10 h-10 object-cover rounded-lg"
                                                         />
                                                     ) : (
-                                                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                                                        <FolderOpen className="w-5 h-5" />
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center space-x-2">
-                                                        <h3 className="text-sm font-medium text-gray-900 truncate">
-                                                            {resource.title}
+                                                        <h3 className="text-sm font-medium text-gray-900">
+                                                            {category.name}
                                                         </h3>
-                                                        {resource.is_featured && (
+                                                        {category.is_featured && (
                                                             <Badge className="bg-yellow-100 text-yellow-800 text-xs">
                                                                 <Star className="w-3 h-3 mr-1" />
                                                                 Featured
                                                             </Badge>
                                                         )}
-                                                        {resource.is_trending && (
-                                                            <Badge className="bg-orange-100 text-orange-800 text-xs">
-                                                                <TrendingUp className="w-3 h-3 mr-1" />
-                                                                Trending
+                                                        {category.hierarchy_level > 0 && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                <Layers className="w-3 h-3 mr-1" />
+                                                                Level {category.hierarchy_level}
                                                             </Badge>
                                                         )}
                                                     </div>
-                                                    <p className="text-sm text-gray-500 truncate">{resource.excerpt}</p>
+                                                    {category.description && (
+                                                        <p className="text-sm text-gray-500 truncate">{category.description}</p>
+                                                    )}
                                                     <div className="flex items-center space-x-4 mt-1">
                                                         <span className="text-xs text-gray-400 flex items-center">
-                                                            <Clock className="w-3 h-3 mr-1" />
-                                                            {resource.read_time} min read
+                                                            <Hash className="w-3 h-3 mr-1" />
+                                                            {category.slug}
                                                         </span>
-                                                        {resource.tags.length > 0 && (
+                                                        {category.children && category.children.length > 0 && (
                                                             <span className="text-xs text-gray-400 flex items-center">
-                                                                <Tag className="w-3 h-3 mr-1" />
-                                                                {resource.tags.slice(0, 2).join(', ')}
-                                                                {resource.tags.length > 2 && ` +${resource.tags.length - 2}`}
+                                                                <TreePine className="w-3 h-3 mr-1" />
+                                                                {category.children.length} subcategories
                                                             </span>
                                                         )}
                                                     </div>
@@ -496,83 +455,80 @@ export default function ResourcesIndex() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <Badge
-                                                variant="outline"
-                                                className="text-xs"
-                                                style={resource.category?.color ? {
-                                                    borderColor: resource.category.color,
-                                                    color: resource.category.color
-                                                } : {}}
-                                            >
-                                                {resource.category?.name || 'No Category'}
-                                            </Badge>
+                                            {category.parent ? (
+                                                <Badge variant="outline" className="text-xs">
+                                                    {category.parent.name}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-xs text-gray-400">Root Category</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                                    <User className="w-4 h-4 text-gray-600" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {resource.author.name}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <Badge className={`inline-flex items-center ${getStatusColor(resource.status)}`}>
-                                                {getStatusIcon(resource.status)}
-                                                <span className="ml-1 capitalize">{resource.status}</span>
+                                            <Badge className={`inline-flex items-center ${getStatusColor(category.is_active)}`}>
+                                                {getStatusIcon(category.is_active)}
+                                                <span className="ml-1">{category.is_active ? 'Active' : 'Inactive'}</span>
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             <div className="space-y-1">
                                                 <div className="flex items-center">
-                                                    <Eye className="w-3 h-3 mr-1" />
-                                                    {resource.view_count.toLocaleString()}
+                                                    <FileText className="w-3 h-3 mr-1" />
+                                                    {category.resource_count} total
                                                 </div>
-                                                <div className="flex items-center">
-                                                    <BarChart3 className="w-3 h-3 mr-1" />
-                                                    {resource.share_count} shares
+                                                <div className="flex items-center text-green-600">
+                                                    <Globe className="w-3 h-3 mr-1" />
+                                                    {category.active_resources_count} published
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className={`text-sm font-medium ${getSeoScoreColor(resource.seo_score)}`}>
-                                                {resource.seo_score}%
+                                            <div className="flex items-center space-x-1">
+                                                <span className="text-sm text-gray-900 font-medium">
+                                                    {category.sort_order}
+                                                </span>
+                                                <div className="flex flex-col">
+                                                    <button
+                                                        onClick={() => reorderCategory(category.id, 'up')}
+                                                        className="text-gray-400 hover:text-gray-600 p-1"
+                                                    >
+                                                        <ArrowUp className="w-3 h-3" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => reorderCategory(category.id, 'down')}
+                                                        className="text-gray-400 hover:text-gray-600 p-1"
+                                                    >
+                                                        <ArrowDown className="w-3 h-3" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             <div className="space-y-1">
-                                                <div>{new Date(resource.created_at).toLocaleDateString()}</div>
-                                                {resource.published_at && (
-                                                    <div className="text-xs text-green-600">
-                                                        Published: {new Date(resource.published_at).toLocaleDateString()}
-                                                    </div>
-                                                )}
+                                                <div>{new Date(category.created_at).toLocaleDateString()}</div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center space-x-2">
                                                 <Link
-                                                    href={`/resources/${resource.id}`}
+                                                    href={`/resource-categories/${category.id}`}
                                                     className="text-blue-600 hover:text-blue-900"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </Link>
                                                 <Link
-                                                    href={`/resources/${resource.id}/edit`}
+                                                    href={`/resource-categories/${category.id}/edit`}
                                                     className="text-gray-600 hover:text-gray-900"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </Link>
                                                 <button
                                                     onClick={() => {
-                                                        if (confirm('Are you sure you want to delete this resource?')) {
-                                                            router.delete(`/resources/${resource.id}`);
+                                                        if (confirm('Are you sure you want to delete this category?')) {
+                                                            router.delete(`/resource-categories/${category.id}`);
                                                         }
                                                     }}
                                                     className="text-red-600 hover:text-red-900"
+                                                    disabled={category.resource_count > 0 || (category.children && category.children.length > 0)}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -585,14 +541,14 @@ export default function ResourcesIndex() {
                     </div>
 
                     {/* Pagination */}
-                    {resources.data && resources.data.length > 0 && resources.meta && (
+                    {categories.data && categories.data.length > 0 && categories.meta && (
                         <div className="px-6 py-3 border-t border-gray-200">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-700">
-                                    Showing {resources.meta.from || 1} to {resources.meta.to || resources.data.length} of {resources.meta.total || resources.data.length} results
+                                    Showing {categories.meta.from || 1} to {categories.meta.to || categories.data.length} of {categories.meta.total || categories.data.length} results
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    {resources.links && resources.links.map((link, index) => (
+                                    {categories.links && categories.links.map((link, index) => (
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
@@ -609,15 +565,15 @@ export default function ResourcesIndex() {
                         </div>
                     )}
 
-                    {(!resources.data || resources.data.length === 0) && (
+                    {(!categories.data || categories.data.length === 0) && (
                         <div className="text-center py-12">
-                            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No resources found</h3>
-                            <p className="text-gray-600 mb-4">Get started by creating your first resource.</p>
-                            <Link href="/resources/create">
+                            <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
+                            <p className="text-gray-600 mb-4">Get started by creating your first category.</p>
+                            <Link href="/resource-categories/create">
                                 <Button>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Create Resource
+                                    Create Category
                                 </Button>
                             </Link>
                         </div>

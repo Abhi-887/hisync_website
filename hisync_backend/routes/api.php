@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ContactInquiryController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\ResourceApiController;
+use App\Http\Controllers\Api\ResourceCategoryApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,30 @@ Route::prefix('v1')->group(function () {
     Route::post('faqs/{slug}/helpful', [FaqController::class, 'markHelpful'])
         ->middleware(['throttle:10,1']); // 10 helpfulness votes per minute
 
+    // Resource Categories public endpoints
+    Route::get('resource-categories', [ResourceCategoryApiController::class, 'index'])
+        ->middleware(['throttle:100,1']); // 100 requests per minute
+    Route::get('resource-categories/hierarchy', [ResourceCategoryApiController::class, 'hierarchy'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/flat-list', [ResourceCategoryApiController::class, 'flatList'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/popular', [ResourceCategoryApiController::class, 'popular'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/featured', [ResourceCategoryApiController::class, 'featured'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/stats', [ResourceCategoryApiController::class, 'stats'])
+        ->middleware(['throttle:30,1']);
+    Route::get('resource-categories/search', [ResourceCategoryApiController::class, 'search'])
+        ->middleware(['throttle:30,1']);
+    Route::get('resource-categories/analytics', [ResourceCategoryApiController::class, 'analytics'])
+        ->middleware(['throttle:30,1']);
+    Route::get('resource-categories/{slug}', [ResourceCategoryApiController::class, 'show'])
+        ->middleware(['throttle:100,1']);
+    Route::get('resource-categories/{slug}/breadcrumb', [ResourceCategoryApiController::class, 'breadcrumb'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/{slug}/related', [ResourceCategoryApiController::class, 'related'])
+        ->middleware(['throttle:60,1']);
+
     // Resources public endpoints
     Route::get('resources', [ResourceApiController::class, 'index'])
         ->middleware(['throttle:100,1']); // 100 requests per minute
@@ -44,6 +69,30 @@ Route::prefix('v1')->group(function () {
     Route::post('resources/{slug}/share', [ResourceApiController::class, 'share'])
         ->middleware(['throttle:20,1']); // 20 share actions per minute
 
+    // Resource Categories public endpoints
+    Route::get('resource-categories', [ResourceCategoryApiController::class, 'index'])
+        ->middleware(['throttle:100,1']);
+    Route::get('resource-categories/hierarchy', [ResourceCategoryApiController::class, 'hierarchy'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/flat', [ResourceCategoryApiController::class, 'flatList'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/popular', [ResourceCategoryApiController::class, 'popular'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/featured', [ResourceCategoryApiController::class, 'featured'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/stats', [ResourceCategoryApiController::class, 'stats'])
+        ->middleware(['throttle:30,1']);
+    Route::get('resource-categories/search', [ResourceCategoryApiController::class, 'search'])
+        ->middleware(['throttle:30,1']);
+    Route::get('resource-categories/{slug}', [ResourceCategoryApiController::class, 'show'])
+        ->middleware(['throttle:100,1']);
+    Route::get('resource-categories/{slug}/breadcrumb', [ResourceCategoryApiController::class, 'breadcrumb'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/{slug}/related', [ResourceCategoryApiController::class, 'related'])
+        ->middleware(['throttle:60,1']);
+    Route::get('resource-categories/analytics/public', [ResourceCategoryApiController::class, 'analytics'])
+        ->middleware(['throttle:30,1']);
+
     // Admin routes (requires authentication)
     Route::middleware(['auth:sanctum'])->group(function () {
         // Contact inquiries management
@@ -54,8 +103,15 @@ Route::prefix('v1')->group(function () {
         Route::get('faqs/stats', [FaqController::class, 'stats']);
         Route::apiResource('faqs', FaqController::class)->except(['index', 'show']);
 
+        // Resource Categories management
+        Route::apiResource('resource-categories', ResourceCategoryApiController::class)->except(['index', 'show']);
+
         // Resources management
         Route::get('resources/analytics', [ResourceApiController::class, 'analytics']);
         Route::apiResource('resources', ResourceApiController::class)->except(['index', 'show']);
+
+        // Resource Categories management
+        Route::get('resource-categories/analytics', [ResourceCategoryApiController::class, 'analytics']);
+        Route::apiResource('resource-categories', ResourceCategoryApiController::class);
     });
 });

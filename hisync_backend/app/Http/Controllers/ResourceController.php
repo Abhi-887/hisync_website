@@ -18,7 +18,7 @@ class ResourceController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Resource::with('author:id,name,email')
+        $query = Resource::with(['author:id,name,email', 'category:id,name,slug,color'])
             ->orderBy('created_at', 'desc');
 
         // Apply filters
@@ -27,7 +27,7 @@ class ResourceController extends Controller
         }
 
         if ($request->filled('category') && $request->category !== 'all') {
-            $query->where('category', $request->category);
+            $query->where('category_id', $request->category);
         }
 
         if ($request->filled('author') && $request->author !== 'all') {
@@ -72,12 +72,15 @@ class ResourceController extends Controller
             ],
             'categories' => collect([['value' => 'all', 'label' => 'All Categories']])
                 ->concat(
-                    Resource::select('category')
-                        ->distinct()
-                        ->whereNotNull('category')
-                        ->orderBy('category')
+                    \App\Models\ResourceCategory::active()
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
                         ->get()
-                        ->map(fn($item) => ['value' => $item->category, 'label' => $item->category])
+                        ->map(fn($category) => [
+                            'value' => $category->id,
+                            'label' => $category->name,
+                            'color' => $category->color
+                        ])
                 ),
             'authors' => collect([['value' => 'all', 'label' => 'All Authors']])
                 ->concat(
@@ -104,11 +107,16 @@ class ResourceController extends Controller
     {
         $authors = User::select('id', 'name', 'email')->orderBy('name')->get();
         $categories = Resource::getCategories();
+        $resourceCategories = \App\Models\ResourceCategory::active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'color', 'parent_id']);
         $popularTags = Resource::getPopularTags(50);
 
         return Inertia::render('Resources/Create', [
             'authors' => $authors,
             'categories' => $categories,
+            'resourceCategories' => $resourceCategories,
             'popularTags' => $popularTags,
         ]);
     }
@@ -160,7 +168,7 @@ class ResourceController extends Controller
         // Get related resources
         $relatedResources = Resource::published()
             ->where('id', '!=', $resource->id)
-            ->where('category', $resource->category)
+            ->where('category_id', $resource->category_id)
             ->orderBy('view_count', 'desc')
             ->limit(3)
             ->get(['id', 'title', 'slug', 'excerpt', 'featured_image', 'published_at', 'view_count']);
@@ -176,15 +184,20 @@ class ResourceController extends Controller
      */
     public function edit(Resource $resource): Response
     {
-        $resource->load('author:id,name,email');
+        $resource->load(['author:id,name,email', 'category:id,name']);
         $authors = User::select('id', 'name', 'email')->orderBy('name')->get();
         $categories = Resource::getCategories();
+        $resourceCategories = \App\Models\ResourceCategory::active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'color', 'parent_id']);
         $popularTags = Resource::getPopularTags(50);
 
         return Inertia::render('Resources/Edit', [
             'resource' => $resource,
             'authors' => $authors,
             'categories' => $categories,
+            'resourceCategories' => $resourceCategories,
             'popularTags' => $popularTags,
         ]);
     }

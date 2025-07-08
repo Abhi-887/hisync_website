@@ -17,7 +17,7 @@ class Resource extends Model
         'slug',
         'excerpt',
         'content',
-        'category',
+        'category_id',
         'tags',
         'author_id',
         'featured_image',
@@ -72,7 +72,6 @@ class Resource extends Model
     protected $appends = [
         'reading_time_text',
         'published_date_formatted',
-        'category_slug',
         'full_url'
     ];
 
@@ -82,9 +81,9 @@ class Resource extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    public function comments()
+    public function category()
     {
-        return $this->hasMany(ResourceComment::class);
+        return $this->belongsTo(ResourceCategory::class, 'category_id');
     }
 
     // Accessors
@@ -97,11 +96,6 @@ class Resource extends Model
     public function getPublishedDateFormattedAttribute()
     {
         return $this->published_at ? $this->published_at->format('M d, Y') : null;
-    }
-
-    public function getCategorySlugAttribute()
-    {
-        return Str::slug($this->category);
     }
 
     public function getFullUrlAttribute()
@@ -176,7 +170,14 @@ class Resource extends Model
 
     public function scopeByCategory(Builder $query, $category)
     {
-        return $query->where('category', $category);
+        if (is_numeric($category)) {
+            return $query->where('category_id', $category);
+        }
+
+        // Support for legacy category slug/name lookup
+        return $query->whereHas('category', function ($q) use ($category) {
+            $q->where('slug', $category)->orWhere('name', $category);
+        });
     }
 
     public function scopeSearch(Builder $query, $search)
@@ -185,7 +186,9 @@ class Resource extends Model
             $q->where('title', 'like', "%{$search}%")
               ->orWhere('excerpt', 'like', "%{$search}%")
               ->orWhere('content', 'like', "%{$search}%")
-              ->orWhere('category', 'like', "%{$search}%")
+              ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                  $categoryQuery->where('name', 'like', "%{$search}%");
+              })
               ->orWhereJsonContains('tags', $search);
         });
     }
@@ -240,22 +243,23 @@ class Resource extends Model
     // Static methods
     public static function getCategories()
     {
-        return static::published()
-            ->whereNotNull('category')
-            ->pluck('category')
-            ->unique()
-            ->sort()
+        // Return active resource categories instead of legacy string categories
+        return \App\Models\ResourceCategory::active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->pluck('name')
             ->values();
     }
 
     public static function getCategoriesWithCount()
     {
-        return static::published()
-            ->whereNotNull('category')
-            ->selectRaw('category, count(*) as count')
-            ->groupBy('category')
-            ->orderBy('count', 'desc')
-            ->pluck('count', 'category');
+        // Get categories with resource count using the new category relationship
+        return \App\Models\ResourceCategory::withCount(['resources' => function ($query) {
+                $query->published();
+            }])
+            ->orderBy('resources_count', 'desc')
+            ->get()
+            ->pluck('resources_count', 'name');
     }
 
     public static function getAllTags()
@@ -343,7 +347,7 @@ class Resource extends Model
         }
 
         // Category (0-5 points)
-        if ($this->category) {
+        if ($this->category_id) {
             $score += 5;
         }
 

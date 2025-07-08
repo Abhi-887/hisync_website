@@ -34,7 +34,7 @@ class ResourceRequest extends FormRequest
             ],
             'excerpt' => 'required|string|max:500',
             'content' => 'required|string|min:100',
-            'category' => 'required|string|max:100',
+            'category_id' => 'required|exists:resource_categories,id',
             'tags' => 'nullable|array|max:10',
             'tags.*' => 'string|max:50',
             'author_id' => 'required|exists:users,id',
@@ -75,7 +75,8 @@ class ResourceRequest extends FormRequest
             'excerpt.max' => 'The excerpt cannot be longer than 500 characters.',
             'content.required' => 'The resource content is required.',
             'content.min' => 'The content must be at least 100 characters long.',
-            'category.required' => 'Please select a category for this resource.',
+            'category_id.required' => 'Please select a category for this resource.',
+            'category_id.exists' => 'The selected category does not exist.',
             'tags.max' => 'You can add a maximum of 10 tags.',
             'tags.*.max' => 'Each tag cannot be longer than 50 characters.',
             'author_id.required' => 'Please select an author for this resource.',
@@ -111,6 +112,7 @@ class ResourceRequest extends FormRequest
             'is_published' => 'published status',
             'published_at' => 'publication date',
             'author_id' => 'author',
+            'category_id' => 'category',
             'read_time' => 'estimated read time',
         ];
     }

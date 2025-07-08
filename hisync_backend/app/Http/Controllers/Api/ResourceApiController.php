@@ -154,10 +154,10 @@ class ResourceApiController extends Controller
             // Get related resources
             $relatedResources = Resource::published()
                 ->where('id', '!=', $resource->id)
-                ->where('category', $resource->category)
+                ->where('category_id', $resource->category_id)
                 ->with('author:id,name')
                 ->select([
-                    'id', 'title', 'slug', 'excerpt', 'category',
+                    'id', 'title', 'slug', 'excerpt', 'category_id',
                     'author_id', 'featured_image', 'published_at',
                     'read_time', 'view_count'
                 ])

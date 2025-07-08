@@ -32,23 +32,33 @@ interface Author {
     email: string;
 }
 
+interface Category {
+    id: number;
+    name: string;
+    color?: string;
+    parent_id?: number;
+}
+
 interface PageProps extends Record<string, any> {
     authors: Author[];
     categories: string[];
+    resourceCategories: Category[];
     popularTags: string[];
 }
 
-export default function CreateResource({ authors, categories, popularTags }: PageProps) {
+export default function CreateResource({ authors, categories, resourceCategories, popularTags }: PageProps) {
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [newTag, setNewTag] = useState('');
     const [previewMode, setPreviewMode] = useState(false);
+    const [featuredImagePreview, setFeaturedImagePreview] = useState<string | null>(null);
+    const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
     const { data, setData, post, processing, errors, progress } = useForm({
         title: '',
         slug: '',
         excerpt: '',
         content: '',
-        category: '',
+        category_id: '',
         tags: [] as string[],
         author_id: '',
         status: 'draft',
@@ -115,17 +125,40 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
         const file = e.target.files?.[0];
         if (file) {
             setData('featured_image', file);
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setFeaturedImagePreview(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
     const handleGalleryImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         setData('gallery_images', [...data.gallery_images, ...files]);
+
+        // Create previews
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setGalleryPreviews(prev => [...prev, e.target?.result as string]);
+            };
+            reader.readAsDataURL(file);
+        });
     };
 
     const removeGalleryImage = (index: number) => {
         const newImages = data.gallery_images.filter((_, i) => i !== index);
+        const newPreviews = galleryPreviews.filter((_, i) => i !== index);
         setData('gallery_images', newImages);
+        setGalleryPreviews(newPreviews);
+    };
+
+    const removeFeaturedImage = () => {
+        setData('featured_image', null);
+        setFeaturedImagePreview(null);
     };
 
     return (
@@ -343,19 +376,19 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                                         Category
                                     </label>
                                     <select
-                                        value={data.category}
-                                        onChange={(e) => setData('category', e.target.value)}
+                                        value={data.category_id}
+                                        onChange={(e) => setData('category_id', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="">Select Category</option>
-                                        {categories.map((category) => (
-                                            <option key={category} value={category}>
-                                                {category}
+                                        {resourceCategories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.category && (
-                                        <p className="text-red-600 text-sm mt-1">{errors.category}</p>
+                                    {errors.category_id && (
+                                        <p className="text-red-600 text-sm mt-1">{errors.category_id}</p>
                                     )}
                                 </div>
 
@@ -471,24 +504,41 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Featured Image
                                     </label>
-                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFeaturedImageChange}
-                                            className="hidden"
-                                            id="featured-image"
-                                        />
-                                        <label
-                                            htmlFor="featured-image"
-                                            className="cursor-pointer flex flex-col items-center justify-center"
-                                        >
-                                            <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                                            <span className="text-sm text-gray-600">
-                                                {data.featured_image ? data.featured_image.name : 'Click to upload featured image'}
-                                            </span>
-                                        </label>
-                                    </div>
+                                    {featuredImagePreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={featuredImagePreview}
+                                                alt="Featured image preview"
+                                                className="w-full h-48 object-cover rounded-lg"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={removeFeaturedImage}
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFeaturedImageChange}
+                                                className="hidden"
+                                                id="featured-image"
+                                            />
+                                            <label
+                                                htmlFor="featured-image"
+                                                className="cursor-pointer flex flex-col items-center justify-center"
+                                            >
+                                                <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                                                <span className="text-sm text-gray-600">
+                                                    Click to upload featured image
+                                                </span>
+                                            </label>
+                                        </div>
+                                    )}
                                     {errors.featured_image && (
                                         <p className="text-red-600 text-sm mt-1">{errors.featured_image}</p>
                                     )}
@@ -518,18 +568,25 @@ export default function CreateResource({ authors, categories, popularTags }: Pag
                                         </label>
                                     </div>
 
-                                    {data.gallery_images.length > 0 && (
-                                        <div className="mt-2 space-y-2">
-                                            {data.gallery_images.map((file, index) => (
-                                                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                                    <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                                    {galleryPreviews.length > 0 && (
+                                        <div className="mt-4 grid grid-cols-2 gap-2">
+                                            {galleryPreviews.map((preview, index) => (
+                                                <div key={index} className="relative">
+                                                    <img
+                                                        src={preview}
+                                                        alt={`Gallery image ${index + 1}`}
+                                                        className="w-full h-24 object-cover rounded-lg"
+                                                    />
                                                     <button
                                                         type="button"
                                                         onClick={() => removeGalleryImage(index)}
-                                                        className="text-red-600 hover:text-red-800"
+                                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                                                     >
-                                                        <X className="w-4 h-4" />
+                                                        <X className="w-3 h-3" />
                                                     </button>
+                                                    <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                                                        {data.gallery_images[index]?.name}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
