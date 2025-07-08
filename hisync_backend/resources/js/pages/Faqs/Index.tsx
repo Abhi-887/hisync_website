@@ -38,7 +38,7 @@ interface Faq {
     id: number;
     question: string;
     answer: string;
-    category: string;
+    category_id?: number;
     slug: string;
     status: 'active' | 'inactive';
     is_featured: boolean;
@@ -50,6 +50,7 @@ interface Faq {
     meta_description: string | null;
     created_at: string;
     updated_at: string;
+    category?: FaqCategory; // Laravel relationship
     creator?: {
         id: number;
         name: string;
@@ -82,6 +83,12 @@ interface PaginatedFaqs {
     total: number;
 }
 
+interface FaqCategory {
+    id: number;
+    name: string;
+    color?: string;
+}
+
 interface Props {
     faqs: PaginatedFaqs;
     filters: {
@@ -92,7 +99,7 @@ interface Props {
         sort_by?: string;
         sort_order?: string;
     };
-    categories: string[];
+    categories: FaqCategory[];
     statuses: string[];
     stats: {
         total: number;
@@ -228,12 +235,20 @@ export default function FaqsIndex({ faqs, filters, categories, statuses, stats }
                         <h1 className="text-2xl font-bold text-gray-900">FAQ Management</h1>
                         <p className="text-gray-600">Manage frequently asked questions and their responses</p>
                     </div>
-                    <Button asChild>
-                        <Link href="/faqs/create">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add FAQ
-                        </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" asChild>
+                            <Link href="/faq-categories">
+                                <Filter className="h-4 w-4 mr-2" />
+                                Categories
+                            </Link>
+                        </Button>
+                        <Button asChild>
+                            <Link href="/faqs/create">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add FAQ
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -322,8 +337,16 @@ export default function FaqsIndex({ faqs, filters, categories, statuses, stats }
                                 <SelectContent>
                                     <SelectItem value="all">All Categories</SelectItem>
                                     {categories.map((category) => (
-                                        <SelectItem key={category} value={category}>
-                                            {category}
+                                        <SelectItem key={category.id} value={category.id.toString()}>
+                                            <div className="flex items-center gap-2">
+                                                {category.color && (
+                                                    <div
+                                                        className="w-3 h-3 rounded-full"
+                                                        style={{ backgroundColor: category.color }}
+                                                    />
+                                                )}
+                                                {category.name}
+                                            </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -485,9 +508,17 @@ export default function FaqsIndex({ faqs, filters, categories, statuses, stats }
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">
-                                                {faq.category}
-                                            </Badge>
+                                            <div className="flex items-center gap-2">
+                                                {faq.category?.color && (
+                                                    <div
+                                                        className="w-3 h-3 rounded-full"
+                                                        style={{ backgroundColor: faq.category.color }}
+                                                    />
+                                                )}
+                                                <Badge variant="outline">
+                                                    {faq.category?.name || 'Uncategorized'}
+                                                </Badge>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge

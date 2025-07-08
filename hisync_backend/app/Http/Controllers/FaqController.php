@@ -59,7 +59,7 @@ class FaqController extends Controller
         $faqs = $query->paginate(10)->withQueryString();
 
         // Get filter options
-        $categories = FaqCategory::active()->ordered()->get(['id', 'name']);
+        $categories = FaqCategory::active()->ordered()->get(['id', 'name', 'color']);
         $statuses = ['active', 'inactive'];
 
         // Get statistics

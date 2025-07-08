@@ -262,7 +262,7 @@ export default function FaqCategoryCreate() {
                                     <div className="border rounded-lg p-4 space-y-2">
                                         <div className="flex items-center gap-3">
                                             {data.color && (
-                                                <div 
+                                                <div
                                                     className="w-4 h-4 rounded"
                                                     style={{ backgroundColor: data.color }}
                                                 />

@@ -85,7 +85,7 @@ class Faq extends Model
     // Accessors
     public function getFormattedCreatedAtAttribute()
     {
-        return $this->created_at->format('M d, Y H:i');
+        return $this->created_at ? $this->created_at->format('M d, Y H:i') : 'N/A';
     }
 
     public function getStatusBadgeColorAttribute()

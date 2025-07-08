@@ -383,7 +383,7 @@ export default function FaqCategoriesIndex({ categories, filters, statuses, stat
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <div 
+                                            <div
                                                 className="cursor-move p-1"
                                                 title="Drag to reorder"
                                             >
@@ -393,7 +393,7 @@ export default function FaqCategoriesIndex({ categories, filters, statuses, stat
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 {category.color && (
-                                                    <div 
+                                                    <div
                                                         className="w-4 h-4 rounded"
                                                         style={{ backgroundColor: category.color }}
                                                     />

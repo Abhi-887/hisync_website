@@ -210,7 +210,7 @@ export default function FaqCreate({ categories }: Props) {
                                                         <SelectItem key={category.id} value={category.id.toString()}>
                                                             <div className="flex items-center gap-2">
                                                                 {category.color && (
-                                                                    <div 
+                                                                    <div
                                                                         className="w-3 h-3 rounded-full"
                                                                         style={{ backgroundColor: category.color }}
                                                                     />
@@ -221,9 +221,9 @@ export default function FaqCreate({ categories }: Props) {
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
+                                            <Button
+                                                type="button"
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => router.get('/faq-categories/create')}
                                                 title="Add new category"
@@ -237,7 +237,7 @@ export default function FaqCreate({ categories }: Props) {
                                         {categories.length === 0 && (
                                             <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                                                 <p className="text-sm text-yellow-800">
-                                                    No categories available. 
+                                                    No categories available.
                                                     <Link href="/faq-categories/create" className="font-medium underline ml-1">
                                                         Create one first
                                                     </Link>

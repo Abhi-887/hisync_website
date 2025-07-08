@@ -32,7 +32,7 @@ class FaqCategoryController extends Controller
         // Sorting
         $sortBy = $request->get('sort_by', 'sort_order');
         $sortOrder = $request->get('sort_order', 'asc');
-        
+
         if (in_array($sortBy, ['name', 'status', 'created_at', 'sort_order'])) {
             $query->orderBy($sortBy, $sortOrder);
         } else {
