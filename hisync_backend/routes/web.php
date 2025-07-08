@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContactInquiryController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\FaqCategoryController;
 use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +25,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update' => 'contact-inquiries.update',
             'destroy' => 'contact-inquiries.destroy',
         ]);
+
+    // FAQ Categories Management
+    Route::resource('faq-categories', FaqCategoryController::class);
+    Route::patch('faq-categories/{faqCategory}/toggle-status', [FaqCategoryController::class, 'toggleStatus'])->name('faq-categories.toggle-status');
+    Route::post('faq-categories/bulk-action', [FaqCategoryController::class, 'bulkAction'])->name('faq-categories.bulk-action');
+    Route::post('faq-categories/reorder', [FaqCategoryController::class, 'reorder'])->name('faq-categories.reorder');
 
     // FAQ Management
     Route::resource('faqs', FaqController::class);

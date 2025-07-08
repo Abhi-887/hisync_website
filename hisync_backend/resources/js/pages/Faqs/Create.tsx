@@ -7,17 +7,24 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, Save, X, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
     { title: 'FAQ Management', href: '/faqs' },
     { title: 'Create FAQ', href: '/faqs/create' },
 ];
 
+interface FaqCategory {
+    id: number;
+    name: string;
+    color?: string;
+}
+
 interface Props {
-    categories: string[];
+    categories: FaqCategory[];
 }
 
 export default function FaqCreate({ categories }: Props) {
@@ -27,7 +34,7 @@ export default function FaqCreate({ categories }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         question: '',
         answer: '',
-        category: '',
+        category_id: '',
         status: 'active' as 'active' | 'inactive',
         is_featured: false as boolean,
         tags: [] as string[],
@@ -67,7 +74,7 @@ export default function FaqCreate({ categories }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create FAQ" />
 
-            <div className="space-y-6">
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -193,26 +200,49 @@ export default function FaqCreate({ categories }: Props) {
                                 <CardContent className="space-y-4">
                                     <div>
                                         <Label htmlFor="category">Category *</Label>
-                                        <Select value={data.category} onValueChange={(value) => setData('category', value)}>
-                                            <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                                                <SelectValue placeholder="Select category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category} value={category}>
-                                                        {category}
-                                                    </SelectItem>
-                                                ))}
-                                                <SelectItem value="General">General</SelectItem>
-                                                <SelectItem value="Products">Products</SelectItem>
-                                                <SelectItem value="Services">Services</SelectItem>
-                                                <SelectItem value="Billing">Billing</SelectItem>
-                                                <SelectItem value="Technical Support">Technical Support</SelectItem>
-                                                <SelectItem value="Account Management">Account Management</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.category && (
-                                            <p className="text-sm text-red-600 mt-1">{errors.category}</p>
+                                        <div className="flex gap-2">
+                                            <Select value={data.category_id} onValueChange={(value) => setData('category_id', value)}>
+                                                <SelectTrigger className={errors.category_id ? 'border-red-500' : ''}>
+                                                    <SelectValue placeholder="Select category" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {categories.map((category) => (
+                                                        <SelectItem key={category.id} value={category.id.toString()}>
+                                                            <div className="flex items-center gap-2">
+                                                                {category.color && (
+                                                                    <div 
+                                                                        className="w-3 h-3 rounded-full"
+                                                                        style={{ backgroundColor: category.color }}
+                                                                    />
+                                                                )}
+                                                                {category.name}
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => router.get('/faq-categories/create')}
+                                                title="Add new category"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        {errors.category_id && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.category_id}</p>
+                                        )}
+                                        {categories.length === 0 && (
+                                            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                                <p className="text-sm text-yellow-800">
+                                                    No categories available. 
+                                                    <Link href="/faq-categories/create" className="font-medium underline ml-1">
+                                                        Create one first
+                                                    </Link>
+                                                </p>
+                                            </div>
                                         )}
                                     </div>
 

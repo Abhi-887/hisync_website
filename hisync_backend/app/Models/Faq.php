@@ -15,6 +15,7 @@ class Faq extends Model
         'question',
         'answer',
         'category',
+        'category_id',
         'status',
         'sort_order',
         'is_featured',
@@ -45,6 +46,11 @@ class Faq extends Model
     ];
 
     // Relationships
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(FaqCategory::class, 'category_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

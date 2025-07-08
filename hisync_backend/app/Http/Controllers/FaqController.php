@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FaqRequest;
 use App\Models\Faq;
+use App\Models\FaqCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +18,7 @@ class FaqController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Faq::with(['creator', 'updater']);
+        $query = Faq::with(['creator', 'updater', 'category']);
 
         // Apply filters
         if ($request->filled('search')) {
@@ -24,12 +26,14 @@ class FaqController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('question', 'like', "%{$search}%")
                   ->orWhere('answer', 'like', "%{$search}%")
-                  ->orWhere('category', 'like', "%{$search}%");
+                  ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                      $categoryQuery->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
         if ($request->filled('category') && $request->category !== 'all') {
-            $query->byCategory($request->category);
+            $query->where('category_id', $request->category);
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
@@ -44,14 +48,18 @@ class FaqController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        if (in_array($sortBy, ['question', 'category', 'status', 'view_count', 'helpful_count', 'created_at'])) {
+        if (in_array($sortBy, ['question', 'status', 'view_count', 'helpful_count', 'created_at'])) {
             $query->orderBy($sortBy, $sortOrder);
+        } elseif ($sortBy === 'category') {
+            $query->join('faq_categories', 'faqs.category_id', '=', 'faq_categories.id')
+                  ->orderBy('faq_categories.name', $sortOrder)
+                  ->select('faqs.*');
         }
 
         $faqs = $query->paginate(10)->withQueryString();
 
         // Get filter options
-        $categories = Faq::distinct()->pluck('category')->filter()->sort()->values();
+        $categories = FaqCategory::active()->ordered()->get(['id', 'name']);
         $statuses = ['active', 'inactive'];
 
         // Get statistics
@@ -78,8 +86,8 @@ class FaqController extends Controller
      */
     public function create(): Response
     {
-        // Get existing categories for suggestions
-        $categories = Faq::distinct()->pluck('category')->filter()->sort()->values();
+        // Get FAQ categories
+        $categories = FaqCategory::active()->ordered()->get(['id', 'name', 'color']);
 
         return Inertia::render('Faqs/Create', [
             'categories' => $categories,
@@ -127,8 +135,8 @@ class FaqController extends Controller
      */
     public function edit(Faq $faq): Response
     {
-        // Get existing categories for suggestions
-        $categories = Faq::distinct()->pluck('category')->filter()->sort()->values();
+        // Get FAQ categories
+        $categories = FaqCategory::active()->ordered()->get(['id', 'name', 'color']);
 
         return Inertia::render('Faqs/Edit', [
             'faq' => $faq,
@@ -191,7 +199,7 @@ class FaqController extends Controller
         try {
             $faq->update([
                 'status' => $faq->status === 'active' ? 'inactive' : 'active',
-                'updated_by' => auth()->id(),
+                'updated_by' => Auth::id(),
             ]);
 
             return redirect()->back()
@@ -217,7 +225,7 @@ class FaqController extends Controller
         try {
             $faq->update([
                 'is_featured' => !$faq->is_featured,
-                'updated_by' => auth()->id(),
+                'updated_by' => Auth::id(),
             ]);
 
             return redirect()->back()
@@ -257,22 +265,22 @@ class FaqController extends Controller
                     break;
 
                 case 'activate':
-                    $faqs->update(['status' => 'active', 'updated_by' => auth()->id()]);
+                    $faqs->update(['status' => 'active', 'updated_by' => Auth::id()]);
                     $message = "Activated {$count} FAQ(s) successfully!";
                     break;
 
                 case 'deactivate':
-                    $faqs->update(['status' => 'inactive', 'updated_by' => auth()->id()]);
+                    $faqs->update(['status' => 'inactive', 'updated_by' => Auth::id()]);
                     $message = "Deactivated {$count} FAQ(s) successfully!";
                     break;
 
                 case 'feature':
-                    $faqs->update(['is_featured' => true, 'updated_by' => auth()->id()]);
+                    $faqs->update(['is_featured' => true, 'updated_by' => Auth::id()]);
                     $message = "Featured {$count} FAQ(s) successfully!";
                     break;
 
                 case 'unfeature':
-                    $faqs->update(['is_featured' => false, 'updated_by' => auth()->id()]);
+                    $faqs->update(['is_featured' => false, 'updated_by' => Auth::id()]);
                     $message = "Unfeatured {$count} FAQ(s) successfully!";
                     break;
             }

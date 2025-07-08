@@ -30,6 +30,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Checkbox } from '@/components/ui/checkbox';
 
 const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
     { title: 'FAQ Management', href: '/faqs' },
 ];
 
@@ -220,7 +221,7 @@ export default function FaqsIndex({ faqs, filters, categories, statuses, stats }
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="FAQ Management" />
 
-            <div className="space-y-6">
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
