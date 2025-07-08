@@ -114,18 +114,9 @@ export default function HeroSection({ showTooltip, setShowTooltip }: HeroSection
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center space-y-8"
-        >
+        <div className="text-center space-y-8">
           {/* Badge */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <div>
             <Badge 
               variant="outline" 
               className="mb-6 px-4 py-2 bg-white/80 backdrop-blur-sm text-blue-700 border-blue-200 font-medium shadow-lg hover:shadow-xl transition-all duration-300"
@@ -133,47 +124,27 @@ export default function HeroSection({ showTooltip, setShowTooltip }: HeroSection
               <Award className="w-4 h-4 mr-2" />
               Trusted by Fortune 500 Companies
             </Badge>
-          </motion.div>
+          </div>
           
           {/* Main Heading */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-5xl md:text-7xl font-bold text-slate-900 leading-tight tracking-tight"
-          >
+          <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-tight tracking-tight">
             Transform Your Business
             <br />
-            <motion.span 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 bg-clip-text text-transparent"
-            >
+            <span className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 bg-clip-text text-transparent">
               Holistically
-            </motion.span>
-          </motion.h1>
+            </span>
+          </h1>
           
           {/* Description */}
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light"
-          >
+          <p className="text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
             We are your agile end-to-end partner: Ex-Big 4 consultants streamline 
             operations and elite engineers build custom ERP Solutions. 
             <span className="text-slate-900 font-medium">One Team</span> for any Business Size, 
             designed to scale with you.
-          </motion.p>
+          </p>
           
           {/* CTA Buttons */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10">
             <PremiumButton 
               size="lg" 
               className="px-8 py-4 text-lg shadow-xl hover:shadow-2xl group transition-all duration-300"
@@ -215,15 +186,10 @@ export default function HeroSection({ showTooltip, setShowTooltip }: HeroSection
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
           
           {/* Stats Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { value: "500+", label: "Clients", icon: <Users className="w-5 h-5" /> },
               { value: "87%", label: "Success Rate", icon: <TrendingUp className="w-5 h-5" /> },
@@ -260,8 +226,8 @@ export default function HeroSection({ showTooltip, setShowTooltip }: HeroSection
                 )}
               </div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

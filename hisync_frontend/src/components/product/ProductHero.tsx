@@ -96,25 +96,15 @@ export default function ProductHero() {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 lg:py-16">
           {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8 text-center lg:text-left relative"
-          >
+          <div className="space-y-8 text-center lg:text-left relative">
             <div className="relative z-10 space-y-8">
             {/* Premium badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex justify-center lg:justify-start"
-            >
+            <div className="flex justify-center lg:justify-start">
               <Badge className="px-6 py-3 bg-white/40 backdrop-blur-sm border-0 text-slate-700 shadow-md text-sm font-medium hover:shadow-lg transition-all duration-300">
                 <Sparkles className="w-4 h-4 mr-2 text-blue-600" />
                 Make Investment Decisions
               </Badge>
-            </motion.div>
+            </div>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-800 leading-[0.9] tracking-tight">
               Introducing
@@ -137,27 +127,19 @@ export default function ProductHero() {
                   { icon: <Smartphone className="w-5 h-5" />, text: "Mobile & Web Ready" },
                   { icon: <Monitor className="w-5 h-5" />, text: "Real-time Updates" }
                 ].map((item, index) => (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
                     className="flex items-center space-x-3 p-4 rounded-lg bg-white/30 backdrop-blur-sm border-0 hover:bg-white/40 hover:shadow-md transition-all duration-300 group"
                   >
                     <div className="text-blue-600 group-hover:text-blue-700 transition-colors">{item.icon}</div>
                     <span className="text-slate-700 font-medium text-sm">{item.text}</span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 pt-6 justify-center lg:justify-start"
-            >
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 justify-center lg:justify-start">
               <button className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-3">
                 <span>Start Free Trial</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -165,17 +147,12 @@ export default function ProductHero() {
               <button className="px-8 py-4 border-2 border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-800 hover:bg-slate-50 backdrop-blur-sm font-semibold rounded-2xl transition-all duration-300">
                 Watch Demo
               </button>
-            </motion.div>
             </div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Right Content - Phone Mockup */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative flex justify-center lg:justify-end"
-          >
+          <div className="relative flex justify-center lg:justify-end">
             <div className="relative">
               {/* Subtle glow effect behind phone */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-300/20 to-slate-300/20 rounded-[3rem] blur-2xl scale-105"></div>
@@ -268,7 +245,7 @@ export default function ProductHero() {
                 className="absolute bottom-1/3 -right-20 w-4 h-16 bg-gradient-to-b from-cyan-200/50 to-blue-200/50 rounded-full shadow-lg"
               ></motion.div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
