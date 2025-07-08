@@ -22,7 +22,7 @@ export default function Home() {
       
       <ServicesSection />
       
-      <AssessmentSection showTooltip={showTooltip} setShowTooltip={setShowTooltip} />
+      {/* <AssessmentSection showTooltip={showTooltip} setShowTooltip={setShowTooltip} /> */}
       
       <ProcessSection />
       
